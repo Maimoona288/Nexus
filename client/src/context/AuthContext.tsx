@@ -159,22 +159,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Production Secure Password Modifier Payload Handler
-  const resetPassword = async (token: string, password: string) => {
-    setError(null);
-    try {
-      console.log("📤 Dispatching Password Modification Request with token verification.");
-      // Matches your production query structural parameters endpoint setup
-    await API.post(`/reset-password/${token}`, { password });
-      console.log("✅ Password has been modified and locked cleanly into DB.");
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || 'Token has expired or update failed.';
-      setError(errMsg);
-      console.error("❌ Password Reset Exception Block:", errMsg);
-      throw err;
-    }
-  };
 
+const resetPassword = async (token: string, password: string) => {
+  setError(null);
+
+  try {
+    console.log("📤 Sending Reset Password Request");
+
+    const res = await API.post(`/reset-password/${token}`, {
+      password
+    });
+
+    console.log("✅ Password reset successful");
+
+    return res.data;
+  } catch (err: any) {
+    const errMsg =
+      err.response?.data?.message ||
+      "Password reset failed.";
+
+    setError(errMsg);
+
+    console.error("❌ Reset Password Error:", errMsg);
+
+    throw err;
+  }
+};
   const logout = () => {
     localStorage.removeItem('nexus_token');
     setToken(null);
