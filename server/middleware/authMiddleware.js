@@ -21,5 +21,5 @@ exports.authorizeRoles = (...allowedRoles) => {
       return res.status(403).json({ message: 'Access Forbidden. Unauthorized role clearance.' });
     }
     next();
-  }
+  };
 };

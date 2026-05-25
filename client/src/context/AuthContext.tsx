@@ -24,6 +24,8 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (profileData: any) => Promise<void>;
   clearError: () => void;
+  forgotPassword: (email: string) => Promise<void>; // Added to interface
+  resetPassword: (token: string, password: string) => Promise<void>; // Added to interface
 }
 
 // 1. Export the raw context explicitly so it can be picked up safely by hooks elsewhere
@@ -141,6 +143,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Professional Password Recovery Service Dispatcher
+  const forgotPassword = async (email: string) => {
+    setError(null);
+    try {
+      console.log("📤 Dispatching Forgot Password Link Request for:", email);
+      // Calls your Express server endpoint /api/auth/forgot-password
+      await API.post('/forgot-password', { email });
+      console.log("✅ Forgot password request submitted successfully.");
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || 'Failed to dispatch password recovery email.';
+      setError(errMsg);
+      console.error("❌ Forgot Password Exception:", errMsg);
+      throw err; // Crucial so the UI page catches it and stops loading states
+    }
+  };
+
+  // Production Secure Password Modifier Payload Handler
+  const resetPassword = async (token: string, password: string) => {
+    setError(null);
+    try {
+      console.log("📤 Dispatching Password Modification Request with token verification.");
+      // Matches your production query structural parameters endpoint setup
+    await API.post(`/reset-password/${token}`, { password });
+      console.log("✅ Password has been modified and locked cleanly into DB.");
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || 'Token has expired or update failed.';
+      setError(errMsg);
+      console.error("❌ Password Reset Exception Block:", errMsg);
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('nexus_token');
     setToken(null);
@@ -151,7 +185,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, error, register, login, logout, updateProfile, clearError }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      loading, 
+      error, 
+      register, 
+      login, 
+      logout, 
+      updateProfile, 
+      clearError,
+      forgotPassword, // Exposed to provider context wrapper
+      resetPassword   // Exposed to provider context wrapper
+    }}>
       {children}
     </AuthContext.Provider>
   );
